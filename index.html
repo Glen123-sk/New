@@ -1,739 +1,2890 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>COM-SERVE Funeral Payment Tracking</title>
-  <style>/* ==== DARK THEME BASE ==== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-:root {
-  --bg-color: #121212;
-  --card-bg: #1e1e1e;
-  --text-color: #e0e0e0;
-  --accent-color: #4caf50;
-  --accent-hover: #66bb6a;
-  --shadow-color: rgba(0, 0, 0, 0.7);
-  --border-radius: 12px;
-  --transition-speed: 0.3s;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  margin: 0;
-  line-height: 1.6;
-  overflow-y: scroll;
-}
-a {
-  color: var(--accent-color);
-  text-decoration: none;
-  transition: color var(--transition-speed);
-}
-a:hover {
-  color: var(--accent-hover);
-}
-h1, h2, h3, h4 {
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-}
-p {
-  margin: 0 0 1rem 0;
-}
-
-/* ==== NAVIGATION TABS ==== */
-nav {
-  background-color: var(--card-bg);
-  display: flex;
-  justify-content: center;
-  padding: 1rem 0;
-  box-shadow: 0 2px 5px var(--shadow-color);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-nav button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  font-size: 1rem;
-  margin: 0 1rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: background-color var(--transition-speed), color var(--transition-speed);
-  position: relative;
-  overflow: hidden;
-}
-nav button::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
-  height: 3px;
-  background: var(--accent-color);
-  transition: width 0.3s ease, left 0.3s ease;
-  border-radius: 3px 3px 0 0;
-}
-nav button:hover::after,
-nav button.active::after {
-  width: 100%;
-  left: 0;
-}
-nav button:hover,
-nav button.active {
-  background-color: var(--accent-color);
-  color: #121212;
-}
-
-/* ==== MAIN CONTAINER ==== */
-main {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-
-/* ==== CARD STYLE ==== */
-.card {
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 8px var(--shadow-color);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-}
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow:
-    0 10px 20px rgba(76, 175, 80, 0.3),
-    0 4px 8px var(--shadow-color);
-}
-
-/* ==== HOUSEHOLD DASHBOARD ==== */
-#household-dashboard {
-  display: none;
-}
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-}
-.wallet-balance {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--accent-color);
-}
-.status-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: var(--accent-color);
-  margin-right: 0.5rem;
-  vertical-align: middle;
-}
-
-/* ==== TABLES ==== */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  margin-top: 1rem;
-  color: var(--text-color);
-}
-thead tr {
-  background-color: #262626;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-tbody tr:nth-child(odd) {
-  background-color: #1a1a1a;
-}
-tbody tr:nth-child(even) {
-  background-color: #222;
-}
-tbody tr:hover {
-  background-color: #333;
-  cursor: pointer;
-}
-th, td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #333;
-  text-align: left;
-  font-size: 0.9rem;
-  user-select: none;
-}
-
-/* ==== MODAL ==== */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1500;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.75);
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  animation-fill-mode: forwards;
-}
-.modal.active {
-  display: flex;
-  animation: fadeIn 0.3s ease forwards;
-}
-.modal-content {
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  max-width: 600px;
-  width: 100%;
-  padding: 2rem;
-  box-shadow: 0 8px 16px var(--shadow-color);
-  position: relative;
-}
-.modal-close {
-  position: absolute;
-  right: 1rem;
-  top: 1rem;
-  font-size: 1.5rem;
-  color: var(--text-color);
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-/* ==== BUTTONS ==== */
-button.primary {
-  background-color: var(--accent-color);
-  color: #121212;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color var(--transition-speed);
-}
-button.primary:hover {
-  background-color: var(--accent-hover);
-}
-button.primary:active {
-  transform: scale(0.95);
-}
-
-/* ==== FORM CONTROLS ==== */
-input[type="text"],
-input[type="number"],
-select,
-input[type="search"] {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #333;
-  border-radius: var(--border-radius);
-  background-color: #181818;
-  color: var(--text-color);
-  font-size: 1rem;
-  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
-  margin-bottom: 1rem;
-}
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus,
-input[type="search"]:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 5px var(--accent-color);
-}
-
-/* ==== SCROLLBAR ==== */
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: #1e1e1e;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
-  border-radius: 10px;
-}
-
-/* ==== ANIMATIONS ==== */
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
-
-/* ==== RESPONSIVE ==== */
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  nav {
-    flex-wrap: wrap;
-  }
-  nav button {
-    margin: 0.5rem;
-    flex: 1 1 40%;
-  }
-}
-
-/* ==== ADMIN LOGS ==== */
-#logs {
-  font-family: monospace;
-  white-space: pre-wrap;
-  color: #a5d6a7;
-  max-height: 150px;
-  overflow-y: auto;
-  background: #2a2a2a;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-}
-
-/* ==== SCREEN READER ONLY ==== */
-.sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  border: 0 !important;
-}
-
-    /* ==== DARK THEME BASE ==== */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --text-color: #e0e0e0;
-      --accent-color: #4caf50;
-      --accent-hover: #66bb6a;
-      --shadow-color: rgba(0, 0, 0, 0.7);
-      --border-radius: 12px;
-      --transition-speed: 0.3s;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      line-height: 1.6;
-      overflow-y: scroll;
-    }
-    a {
-      color: var(--accent-color);
-      text-decoration: none;
-      transition: color var(--transition-speed);
-    }
-    a:hover {
-      color: var(--accent-hover);
-    }
-    h1,h2,h3,h4 {
-      margin: 0 0 0.5rem 0;
-      font-weight: 600;
-    }
-    p {
-      margin: 0 0 1rem 0;
-    }
-
-    /* ==== NAVIGATION TABS ==== */
-    nav {
-      background-color: var(--card-bg);
-      display: flex;
-      justify-content: center;
-      padding: 1rem 0;
-      box-shadow: 0 2px 5px var(--shadow-color);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    nav button {
-      background: none;
-      border: none;
-      color: var(--text-color);
-      font-size: 1rem;
-      margin: 0 1rem;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      border-radius: var(--border-radius);
-      transition: background-color var(--transition-speed), color var(--transition-speed);
-    }
-    nav button:hover,
-    nav button.active {
-      background-color: var(--accent-color);
-      color: #121212;
-    }
-
-    /* ==== MAIN CONTAINER ==== */
-    main {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    /* ==== CARD STYLE ==== */
-    .card {
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
-      box-shadow: 0 4px 8px var(--shadow-color);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      transition: transform var(--transition-speed);
-    }
-    .card:hover {
-      transform: translateY(-5px);
-    }
-
-    /* ==== HOUSEHOLD DASHBOARD ==== */
-    #household-dashboard {
-      display: none;
-    }
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-    .wallet-balance {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--accent-color);
-    }
-    .status-indicator {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background-color: var(--accent-color);
-      margin-right: 0.5rem;
-      vertical-align: middle;
-    }
-
-    /* ==== TABLES ==== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      color: var(--text-color);
-    }
-    thead {
-      background-color: #2a2a2a;
-    }
-    th, td {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #333;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-    tbody tr:hover {
-      background-color: #333;
-      cursor: default;
-    }
-
-    /* ==== MODAL ==== */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1500;
-      left: 0; top: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.75);
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-    .modal.active {
-      display: flex;
-    }
-    .modal-content {
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
-      max-width: 600px;
-      width: 100%;
-      padding: 2rem;
-      box-shadow: 0 8px 16px var(--shadow-color);
-      position: relative;
-    }
-    .modal-close {
-      position: absolute;
-      right: 1rem;
-      top: 1rem;
-      font-size: 1.5rem;
-      color: var(--text-color);
-      cursor: pointer;
-      background: none;
-      border: none;
-    }
-
-    /* ==== BUTTONS ==== */
-    button.primary {
-      background-color: var(--accent-color);
-      color: #121212;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color var(--transition-speed);
-    }
-    button.primary:hover {
-      background-color: var(--accent-hover);
-    }
-
-    /* ==== RESPONSIVE ==== */
-    @media (max-width: 600px) {
-      nav {
-        flex-wrap: wrap;
-      }
-      nav button {
-        margin: 0.5rem;
-        flex: 1 1 40%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COM-SERVE | Funeral Payment Tracking</title>
+    
+    <!-- CSS Section -->
+    <style>
+        /* Base Styles & Variables */
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --info: #0984e3;
+            
+            --dark-1: #1e272e;
+            --dark-2: #2d3436;
+            --dark-3: #3d484d;
+            --light-1: #f5f6fa;
+            --light-2: #dfe6e9;
+            --light-3: #b2bec3;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-1);
+            color: var(--light-2);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--light-1);
+        }
+        
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.75rem; }
+        h4 { font-size: 1.5rem; }
+        h5 { font-size: 1.25rem; }
+        h6 { font-size: 1rem; }
+        
+        p {
+            margin-bottom: 1rem;
+            color: var(--light-3);
+        }
+        
+        a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            color: var(--accent);
+        }
+        
+        /* Layout Components */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .flex-col {
+            flex-direction: column;
+        }
+        
+        .items-center {
+            align-items: center;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .gap-3 { gap: 1.5rem; }
+        .gap-4 { gap: 2rem; }
+        
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mt-5 { margin-top: 3rem; }
+        
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .mb-5 { margin-bottom: 3rem; }
+        
+        .py-1 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-2 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-3 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
+        
+        .px-1 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2 { padding-left: 1rem; padding-right: 1rem; }
+        .px-3 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .px-4 { padding-left: 2rem; padding-right: 2rem; }
+        
+        /* UI Components */
+        .card {
+            background: var(--dark-2);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid var(--dark-3);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-footer {
+            border-top: 1px solid var(--dark-3);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            white-space: nowrap;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--dark-1);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #00b5b2;
+        }
+        
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #fc68a0;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--light-3);
+            color: var(--light-2);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--dark-3);
+            border-color: var(--light-2);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #00a884;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-primary {
+            background-color: rgba(108, 92, 231, 0.2);
+            color: var(--primary);
+        }
+        
+        .badge-secondary {
+            background-color: rgba(0, 206, 201, 0.2);
+            color: var(--secondary);
+        }
+        
+        .badge-success {
+            background-color: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+        
+        .badge-warning {
+            background-color: rgba(253, 203, 110, 0.2);
+            color: var(--warning);
+        }
+        
+        .badge-danger {
+            background-color: rgba(214, 48, 49, 0.2);
+            color: var(--danger);
+        }
+        
+        .badge-info {
+            background-color: rgba(9, 132, 227, 0.2);
+            color: var(--info);
+        }
+        
+        .badge-light {
+            background-color: rgba(245, 246, 250, 0.1);
+            color: var(--light-2);
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light-2);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--dark-3);
+            border: 1px solid var(--dark-3);
+            border-radius: var(--radius-sm);
+            color: var(--light-2);
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23b2bec3' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+        
+        .input-group {
+            display: flex;
+        }
+        
+        .input-group .form-control {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .input-group .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* Table Styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--dark-3);
+        }
+        
+        .table th {
+            background-color: var(--dark-3);
+            color: var(--light-1);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background-color: var(--dark-2);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--light-1);
+        }
+        
+        .navbar-brand img {
+            height: 32px;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-link {
+            color: var(--light-3);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--light-1);
+            background-color: var(--dark-3);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+        }
+        
+        .navbar-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--dark-2);
+            position: fixed;
+            top: 64px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 900;
+            border-right: 1px solid var(--dark-3);
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .sidebar-item {
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--light-3);
+            padding: 0.5rem 0;
+            transition: var(--transition);
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            color: var(--light-1);
+        }
+        
+        .sidebar-link.active {
+            color: var(--primary);
+        }
+        
+        .sidebar-link i {
+            width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar-divider {
+            height: 1px;
+            background-color: var(--dark-3);
+            margin: 1rem 1.5rem;
+        }
+        
+        .sidebar-header {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--light-3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+            min-height: calc(100vh - 64px);
+            transition: var(--transition);
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--light-3);
+        }
+        
+        .breadcrumb-item:not(:last-child)::after {
+            content: '/';
+            margin-left: 0.5rem;
+        }
+        
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--dark-2);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-card .stat-title {
+            font-size: 0.875rem;
+            color: var(--light-3);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--light-1);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .stat-card .stat-change.up {
+            color: var(--success);
+        }
+        
+        .stat-card .stat-change.down {
+            color: var(--danger);
+        }
+        
+        /* Charts */
+        .chart-container {
+            background: var(--dark-2);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--dark-3);
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: var(--light-3);
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+        
+        .tab:hover {
+            color: var(--light-1);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-dialog {
+            background-color: var(--dark-2);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: var(--transition);
+        }
+        
+        .modal.active .modal-dialog {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--dark-3);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--light-3);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            color: var(--danger);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--dark-3);
+        }
+        
+        /* QR Code */
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+        }
+        
+        .qr-code img {
+            width: 180px;
+            height: 180px;
+        }
+        
+        .qr-details {
+            text-align: center;
+        }
+        
+        .qr-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light-1);
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-instructions {
+            color: var(--light-3);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .animate-fade {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .animate-slide {
+            animation: slideIn 0.3s ease-in-out;
+        }
+        
+        /* Utility Classes */
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-info { color: var(--info); }
+        .text-light { color: var(--light-2); }
+        .text-muted { color: var(--light-3); }
+        
+        .bg-primary { background-color: var(--primary); }
+        .bg-secondary { background-color: var(--secondary); }
+        .bg-success { background-color: var(--success); }
+        .bg-warning { background-color: var(--warning); }
+        .bg-danger { background-color: var(--danger); }
+        .bg-info { background-color: var(--info); }
+        
+        .w-100 { width: 100%; }
+        .h-100 { height: 100%; }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .navbar-toggle {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-cols-2, .grid-cols-3, .grid-cols-4 {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .navbar-nav {
+                display: none;
+            }
+            
+            .navbar-nav.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background-color: var(--dark-2);
+                padding: 1rem;
+                box-shadow: var(--shadow-md);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .modal-dialog {
+                width: 95%;
+            }
+            
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Print Styles */
+        @media print {
+            .navbar, .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 0;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
 </head>
 <body>
-  <nav>
-    <button class="tab-btn active" data-tab="household-dashboard" aria-selected="true">Household Dashboard</button>
-    <button class="tab-btn" data-tab="admin-dashboard" aria-selected="false">Admin Dashboard</button>
-    <button class="tab-btn" data-tab="payments-section" aria-selected="false">Payments</button>
-    <button class="tab-btn" data-tab="households-section" aria-selected="false">Households</button>
-  </nav>
-
-  <main>
-    <!-- Household Dashboard Tab -->
-    <section id="household-dashboard" class="tab-content" aria-label="Household Dashboard">
-      <h1>Household Dashboard</h1>
-      <div class="dashboard-grid">
-        <!-- Wallet Card -->
-        <div class="card wallet-card">
-          <h2>Wallet Balance</h2>
-          <p class="wallet-balance" id="wallet-balance">R 1,250.00</p>
-          <p>Next Due Date: <strong id="next-due-date">2025-08-15</strong></p>
-          <p><span class="status-indicator" id="auto-deduction-status"></span> Auto Deduction Enabled</p>
-          <button id="open-qr-modal" class="primary" aria-haspopup="dialog">Make Payment (QR)</button>
+    <!-- HTML Section -->
+    <header class="navbar">
+        <div class="navbar-container container">
+            <div class="flex items-center gap-4">
+                <button class="btn btn-outline navbar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="#" class="navbar-brand">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjNmM1Y2U3IiBkPSJNMjU2IDhDMTE5IDggOCAxMTkgOCAyNTZzMTExIDI0OCAyNDggMjQ4IDI0OC0xMTEgMjQ4LTI0OFMzOTMgOCAyNTYgOHptMCA0NDhjLTExMC41IDAtMjAwLTg5LjUtMjAwLTIwMFMxNDUuNSA1NiAyNTYgNTZzMjAwIDg5LjUgMjAwIDIwMC04OS41IDIwMC0yMDAgMjAwWm0xMDEuOC0yNjEuN0wtMjE2LjQgMzYzLjNsLTE3LjYgMjkuMWMtNi4yIDEwLjMtMTYuOSAxNi0yOCAxNi0xMi4zIDAtMjMuNC03LTI5LTE4LjNsLTQ1LjEtNzULjVjLTE0LjUtMjQuMiAxLjEtNTQuNSAyNi42LTYyLjlsMTAxLjMtMzAuOCA3Ny4zLTEyLjljOC0xLjQgMTUuNiAyLjQgMTggMTAuMWwzOSA5OS40YzIuOSA3LjQgMSAxNS43LTQuOCAyMC44bC02MC42IDU5LjN6Ii8+PC9zdmc+" alt="COM-SERVE Logo">
+                    COM-SERVE
+                </a>
+            </div>
+            
+            <nav class="navbar-nav" id="navbarNav">
+                <a href="#" class="nav-link active" data-section="dashboard">Dashboard</a>
+                <a href="#" class="nav-link" data-section="payments">Payments</a>
+                <a href="#" class="nav-link" data-section="households">Households</a>
+                <a href="#" class="nav-link" data-section="admin">Admin</a>
+            </nav>
+            
+            <div class="navbar-actions">
+                <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
         </div>
-
-        <!-- Payment History -->
-        <div class="card payment-history-card">
-          <h2>Payment History</h2>
-          <table id="payment-history-table" aria-describedby="payment-history-description">
-            <caption id="payment-history-description" class="sr-only">Recent payment transactions</caption>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Amount (R)</th>
-                <th>Type</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- JS will populate this -->
-            </tbody>
-          </table>
+    </header>
+    
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="sidebar-header">Main</div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link" data-section="payments">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payments</span>
+                </a>
+            </div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link" data-section="households">
+                    <i class="fas fa-home"></i>
+                    <span>Households</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="sidebar-header">Admin</div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link" data-section="admin">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Dashboard</span>
+                </a>
+            </div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </div>
+            <div class="sidebar-item">
+                <a href="#" class="sidebar-link" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Admin Dashboard Tab -->
-    <section id="admin-dashboard" class="tab-content" aria-label="Admin Dashboard" hidden>
-      <h1>Admin Dashboard</h1>
-      <div class="card">
-        <h2>Households List</h2>
-        <input type="search" id="admin-household-search" placeholder="Search households..." aria-label="Search households" />
-        <table id="admin-households-table">
-          <thead>
-            <tr>
-              <th>Household</th>
-              <th>Status</th>
-              <th>Wallet Balance</th>
-              <th>Last Payment</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- JS generated -->
-          </tbody>
-        </table>
-        <button id="run-auto-deductions" class="primary" style="margin-top:1rem;">Run Auto-Deductions</button>
-      </div>
-      <div class="card" style="margin-top: 2rem;">
-        <h2>Logs</h2>
-        <div id="logs" style="height: 150px; overflow-y: auto; background: #2a2a2a; padding: 1rem; border-radius: var(--border-radius); font-size: 0.85rem;"></div>
-      </div>
-    </section>
-
-    <!-- Payments Section Tab -->
-    <section id="payments-section" class="tab-content" aria-label="Payments Section" hidden>
-      <h1>Payments</h1>
-      <div class="card">
-        <h2>Record New Payment</h2>
-        <form id="new-payment-form">
-          <label for="payment-household">Household:</label><br />
-          <select id="payment-household" required>
-            <!-- JS populated -->
-          </select><br /><br />
-
-          <label for="payment-amount">Amount (R):</label><br />
-          <input type="number" id="payment-amount" min="1" step="0.01" required /><br /><br />
-
-          <label for="payment-type">Payment Type:</label><br />
-          <select id="payment-type" required>
-            <option value="cash">Cash</option>
-            <option value="qr">QR Payment</option>
-            <option value="voucher">Voucher</option>
-            <option value="visa">Visa</option>
-          </select><br /><br />
-
-          <button type="submit" class="primary">Submit Payment</button>
-        </form>
-      </div>
-      <div class="card" style="margin-top: 2rem;">
-        <h2>Search / Filter Payments</h2>
-        <input type="search" id="payment-search" placeholder="Search payments..." aria-label="Search payments" />
-        <button id="export-csv" class="primary" style="float:right; margin-bottom: 1rem;">Export to CSV</button>
-        <table id="payments-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Household</th>
-              <th>Amount (R)</th>
-              <th>Type</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- JS generated -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Households Section Tab -->
-    <section id="households-section" class="tab-content" aria-label="Households Section" hidden>
-      <h1>Households</h1>
-      <div class="card">
-        <h2>Search / Filter Households</h2>
-        <input type="search" id="household-search" placeholder="Search households..." aria-label="Search households" />
-        <table id="households-table" style="margin-top:1rem;">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Wallet Balance</th>
-              <th>Contact</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- JS generated -->
-          </tbody>
-        </table>
-      </div>
-      <div class="card" style="margin-top: 2rem;">
-        <h2>Add New Household</h2>
-        <form id="add-household-form">
-          <label for="new-household-name">Name:</label><br />
-          <input type="text" id="new-household-name" required /><br /><br />
-
-          <label for="new-household-contact">Contact Info:</label><br />
-          <input type="text" id="new-household-contact" required /><br /><br />
-
-          <label for="new-household-status">Status:</label><br />
-          <select id="new-household-status" required>
-            <option value="active">Active</option>
-            <option value="delinquent">Delinquent</option>
-            <option value="deceased">Deceased</option>
-          </select><br /><br />
-
-          <label for="new-household-wallet">Initial Wallet Balance (R):</label><br />
-          <input type="number" id="new-household-wallet" min="0" step="0.01" required /><br /><br />
-
-          <button type="submit" class="primary">Add Household</button>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <!-- QR Payment Modal -->
-  <div class="modal" id="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title" aria-hidden="true">
-    <div class="modal-content">
-      <button class="modal-close" aria-label="Close QR payment modal">&times;</button>
-      <h2 id="qr-modal-title">QR Payment</h2>
-      <p>Scan this QR code to pay:</p>
-      <div id="qr-code" style="width: 200px; height: 200px; background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); border-radius: 16px; margin: 1rem auto;"></div>
-      <p style="text-align:center; font-style: italic;">(Mock QR Code - for demo only)</p>
+    </aside>
+    
+    <main class="main-content" id="mainContent">
+        <!-- Dashboard Section -->
+        <section class="content-section active" id="dashboardSection">
+            <div class="container">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Household Dashboard</h1>
+                    </div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">Home</span>
+                        <span class="breadcrumb-item active">Dashboard</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Wallet Balance</div>
+                        <div class="stat-value">R 5,245.00</div>
+                        <div class="stat-change up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>R 250 this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Next Due Date</div>
+                        <div class="stat-value">15 Oct 2023</div>
+                        <div class="stat-change down">
+                            <i class="fas fa-clock"></i>
+                            <span>5 days remaining</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Monthly Contribution</div>
+                        <div class="stat-value">R 350.00</div>
+                        <div class="stat-change">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Auto-deduction enabled</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Funeral Events</div>
+                        <div class="stat-value">2</div>
+                        <div class="stat-change">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Last: 12 Aug 2023</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="card lg:col-span-2">
+                        <div class="card-header">
+                            <h3>Payment History</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentHistoryTable">
+                                    <!-- Payment history rows will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-outline" id="viewAllPayments">
+                                <i class="fas fa-list"></i> View All Payments
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Payment</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Scan the QR code below to make a payment or use the manual payment option.</p>
+                            
+                            <div class="qr-container">
+                                <div class="qr-code">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik01MCA1MEg3MFY3MEg1MFpNNzAgNTBIOTBWNzBINzBaTTkwIDUwSDExMFY3MEg5MFpNNTAgNzBINzBWOTBINTBaIiBmaWxsPSIjMDAwIi8+PHBhdGggZD0iTTEzMCA1MEgxNTBWNzBIMTMwWk0xNTAgNTBIMTcwVjcwSDE1MFpNMTMwIDcwSDE1MFY5MEgxMzBaTTcwIDkwSDkwVjExMEg3MFpNNzAgMTMwSDkwVjE1MEg3MFpNNzAgMTcwSDkwVjE5MEg3MFpNNTAgMTMwSDcwVjE1MEg1MFpNNTAgMTcwSDcwVjE5MEg1MFpNMTMwIDkwSDE1MFYxMTBIMTMwWk0xNTAgOTBIMTcwVjExMEgxNTBaTTEzMCAxMTBIMTUwVjEzMEgxMzBaTTE1MCAxMzBIMTcwVjE1MEgxNTBaTTEzMCAxNTBIMTUwVjE3MEgxMzBaTTE1MCAxNzBIMTcwVjE5MEgxNTBaTTkwIDEzMEgxMTBWMTUwSDkwWk05MCAxNzBIMTEwVjE5MEg5MFoiIGZpbGw9IiMwMDAiLz48L3N2Zz4=" alt="QR Code">
+                                </div>
+                                <div class="qr-details">
+                                    <div class="qr-amount">R 350.00</div>
+                                    <div class="qr-instructions">Scan this QR code with your banking app to make a payment</div>
+                                    <button class="btn btn-primary" id="showPaymentModal">
+                                        <i class="fas fa-money-bill-wave"></i> Manual Payment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3>Recent Funeral Events</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Household</th>
+                                        <th>Deceased</th>
+                                        <th>Amount Paid</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>12 Aug 2023</td>
+                                        <td>Mthembu Family</td>
+                                        <td>Nomvula Mthembu</td>
+                                        <td>R 15,000.00</td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 Jul 2023</td>
+                                        <td>Dlamini Family</td>
+                                        <td>Sipho Dlamini</td>
+                                        <td>R 15,000.00</td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>14 Jun 2023</td>
+                                        <td>Ngwenya Family</td>
+                                        <td>Bongani Ngwenya</td>
+                                        <td>R 15,000.00</td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Payments Section -->
+        <section class="content-section" id="paymentsSection">
+            <div class="container">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Payments Management</h1>
+                    </div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">Home</span>
+                        <span class="breadcrumb-item active">Payments</span>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h3>Record New Payment</h3>
+                            <button class="btn btn-primary" id="showRecordPaymentModal">
+                                <i class="fas fa-plus"></i> New Payment
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="mb-3">Quick Stats</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="stat-card">
+                                        <div class="stat-title">Total Received</div>
+                                        <div class="stat-value">R 42,580.00</div>
+                                        <div class="stat-change up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>12% this month</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-title">Pending Payments</div>
+                                        <div class="stat-value">3</div>
+                                        <div class="stat-change down">
+                                            <i class="fas fa-arrow-down"></i>
+                                            <span>1 from last week</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="mb-3">Payment Methods</h4>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="stat-card">
+                                        <div class="stat-title">Bank Transfer</div>
+                                        <div class="stat-value">64%</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-title">Cash</div>
+                                        <div class="stat-value">22%</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-title">Other</div>
+                                        <div class="stat-value">14%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h3>Payment Transactions</h3>
+                            <div class="flex gap-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="paymentSearch" placeholder="Search payments...">
+                                    <button class="btn btn-secondary">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-outline" id="exportPayments">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="tabs">
+                            <div class="tab active" data-tab="all">All Payments</div>
+                            <div class="tab" data-tab="completed">Completed</div>
+                            <div class="tab" data-tab="pending">Pending</div>
+                            <div class="tab" data-tab="failed">Failed</div>
+                        </div>
+                        
+                        <div class="tab-content active" data-tab-content="all">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Household</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allPaymentsTable">
+                                        <!-- All payments rows will be inserted here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" data-tab-content="completed">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Household</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Reference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="completedPaymentsTable">
+                                        <!-- Completed payments rows will be inserted here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" data-tab-content="pending">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Household</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pendingPaymentsTable">
+                                        <!-- Pending payments rows will be inserted here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" data-tab-content="failed">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Household</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Reason</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="failedPaymentsTable">
+                                        <!-- Failed payments rows will be inserted here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="flex justify-between items-center">
+                            <div class="text-muted">Showing 1 to 10 of 52 entries</div>
+                            <div class="flex gap-1">
+                                <button class="btn btn-outline btn-sm">Previous</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-outline btn-sm">2</button>
+                                <button class="btn btn-outline btn-sm">3</button>
+                                <button class="btn btn-outline btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Households Section -->
+        <section class="content-section" id="householdsSection">
+            <div class="container">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Households Management</h1>
+                    </div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">Home</span>
+                        <span class="breadcrumb-item active">Households</span>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h3>Households List</h3>
+                            <button class="btn btn-primary" id="showAddHouseholdModal">
+                                <i class="fas fa-plus"></i> Add Household
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="input-group" style="max-width: 300px;">
+                                <input type="text" class="form-control" id="householdSearch" placeholder="Search households...">
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button class="btn btn-outline">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="btn btn-outline" id="exportHouseholds">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Household Name</th>
+                                        <th>Primary Member</th>
+                                        <th>Members</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="householdsTable">
+                                    <!-- Households rows will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="flex justify-between items-center">
+                            <div class="text-muted">Showing 1 to 10 of 20 entries</div>
+                            <div class="flex gap-1">
+                                <button class="btn btn-outline btn-sm">Previous</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-outline btn-sm">2</button>
+                                <button class="btn btn-outline btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="card lg:col-span-2">
+                        <div class="card-header">
+                            <h3>Household Distribution</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="householdDistributionChart" style="height: 300px;">
+                                <!-- Chart will be rendered here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Activities</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="space-y-4">
+                                <div class="activity-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-user-plus text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">New household registered</p>
+                                            <p class="text-muted text-sm">Ndlovu Family added by Admin</p>
+                                            <p class="text-muted text-xs">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-success bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-money-bill-wave text-success"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Payment received</p>
+                                            <p class="text-muted text-sm">R 350 from Mthembu Family</p>
+                                            <p class="text-muted text-xs">5 hours ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-cog text-info"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Settings updated</p>
+                                            <p class="text-muted text-sm">Auto-deduction threshold changed</p>
+                                            <p class="text-muted text-xs">1 day ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Payment failed</p>
+                                            <p class="text-muted text-sm">Dlamini Family payment declined</p>
+                                            <p class="text-muted text-xs">2 days ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Admin Section -->
+        <section class="content-section" id="adminSection">
+            <div class="container">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Admin Dashboard</h1>
+                    </div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">Home</span>
+                        <span class="breadcrumb-item active">Admin</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>System Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <span>Total Households</span>
+                                    <span class="font-bold">20</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Active Members</span>
+                                    <span class="font-bold">87</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Total Balance</span>
+                                    <span class="font-bold">R 104,500.00</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Funeral Events</span>
+                                    <span class="font-bold">5 (This year)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button class="btn btn-outline">
+                                    <i class="fas fa-sync-alt"></i> Run Deductions
+                                </button>
+                                <button class="btn btn-outline" id="triggerFuneralEvent">
+                                    <i class="fas fa-cross"></i> Funeral Event
+                                </button>
+                                <button class="btn btn-outline">
+                                    <i class="fas fa-envelope"></i> Send Reminders
+                                </button>
+                                <button class="btn btn-outline">
+                                    <i class="fas fa-file-invoice"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>System Status</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 w-2 rounded-full bg-success"></div>
+                                    <span>Database</span>
+                                    <span class="ml-auto text-muted">Online</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 w-2 rounded-full bg-success"></div>
+                                    <span>Payment Gateway</span>
+                                    <span class="ml-auto text-muted">Connected</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 w-2 rounded-full bg-success"></div>
+                                    <span>Auto-deduction</span>
+                                    <span class="ml-auto text-muted">Active</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 w-2 rounded-full bg-warning"></div>
+                                    <span>Backup</span>
+                                    <span class="ml-auto text-muted">Pending (2 days)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h3>All Households</h3>
+                            <div class="input-group" style="max-width: 300px;">
+                                <input type="text" class="form-control" id="adminHouseholdSearch" placeholder="Search households...">
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Household</th>
+                                        <th>Primary Member</th>
+                                        <th>Contact</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminHouseholdsTable">
+                                    <!-- Admin households rows will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="flex justify-between items-center">
+                            <div class="text-muted">Showing 1 to 10 of 20 entries</div>
+                            <div class="flex gap-1">
+                                <button class="btn btn-outline btn-sm">Previous</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-outline btn-sm">2</button>
+                                <button class="btn btn-outline btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent System Logs</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="space-y-4">
+                                <div class="log-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-info-circle text-info"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">System backup completed</p>
+                                            <p class="text-muted text-sm">Database backup created successfully</p>
+                                            <p class="text-muted text-xs">Today, 02:45 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="log-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-success bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Auto-deduction processed</p>
+                                            <p class="text-muted text-sm">15 successful deductions, 2 failed</p>
+                                            <p class="text-muted text-xs">Yesterday, 06:00 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="log-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Failed payment notification</p>
+                                            <p class="text-muted text-sm">Payment failed for Dlamini Family</p>
+                                            <p class="text-muted text-xs">Yesterday, 10:15 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="log-item">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded-full">
+                                            <i class="fas fa-user-plus text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">New admin user added</p>
+                                            <p class="text-muted text-sm">User: admin2 with limited permissions</p>
+                                            <p class="text-muted text-xs">2 days ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Funeral Event Simulator</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Select Household</label>
+                                <select class="form-control form-select" id="funeralHouseholdSelect">
+                                    <!-- Options will be added by JavaScript -->
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Deceased Name</label>
+                                <input type="text" class="form-control" id="deceasedName" placeholder="Enter deceased name">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Date of Death</label>
+                                <input type="date" class="form-control" id="deathDate">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Relationship to Primary</label>
+                                <select class="form-control form-select" id="relationship">
+                                    <option value="parent">Parent</option>
+                                    <option value="spouse">Spouse</option>
+                                    <option value="child">Child</option>
+                                    <option value="sibling">Sibling</option>
+                                    <option value="other">Other Relative</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary w-full" id="simulateFuneralEvent">
+                                <i class="fas fa-cross"></i> Simulate Funeral Event
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Manual Payment</h3>
+                <button class="modal-close" id="closePaymentModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Household</label>
+                        <select class="form-control form-select" id="paymentHousehold" required>
+                            <!-- Options will be added by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Amount (R)</label>
+                            <input type="number" class="form-control" id="paymentAmount" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Payment Date</label>
+                            <input type="date" class="form-control" id="paymentDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-control form-select" id="paymentMethod" required>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="cash">Cash</option>
+                            <option value="mobile">Mobile Money</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Reference/Note</label>
+                        <input type="text" class="form-control" id="paymentReference" placeholder="Enter payment reference">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Attachment</label>
+                        <input type="file" class="form-control" id="paymentAttachment">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelPayment">Cancel</button>
+                <button class="btn btn-primary" id="submitPayment">Record Payment</button>
+            </div>
+        </div>
     </div>
-  </div>
+    
+    <!-- Add Household Modal -->
+    <div class="modal" id="addHouseholdModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Household</h3>
+                <button class="modal-close" id="closeHouseholdModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="householdForm">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Household Name</label>
+                        <input type="text" class="form-control" id="householdName" placeholder="e.g., Mthembu Family" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Primary Member ID</label>
+                            <input type="text" class="form-control" id="primaryMemberId" placeholder="e.g., 9603015678089" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Date Joined</label>
+                            <input type="date" class="form-control" id="joinDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Primary Member Name</label>
+                        <input type="text" class="form-control" id="primaryMemberName" placeholder="Full name" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Contact Number</label>
+                            <input type="tel" class="form-control" id="contactNumber" placeholder="e.g., 0712345678" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="emailAddress" placeholder="e.g., email@example.com">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Physical Address</label>
+                        <textarea class="form-control" id="physicalAddress" rows="3" placeholder="Street, Town, Postal Code"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Monthly Contribution (R)</label>
+                            <input type="number" class="form-control" id="monthlyContribution" placeholder="350.00" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-control form-select" id="defaultPaymentMethod" required>
+                                <option value="bank">Bank Transfer</option>
+                                <option value="cash">Cash</option>
+                                <option value="mobile">Mobile Money</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Bank Details (if applicable)</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" class="form-control" id="bankName" placeholder="Bank Name">
+                            <input type="text" class="form-control" id="accountNumber" placeholder="Account Number">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Initial Balance (R)</label>
+                        <input type="number" class="form-control" id="initialBalance" placeholder="0.00" step="0.01" min="0" value="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelHousehold">Cancel</button>
+                <button class="btn btn-primary" id="submitHousehold">Save Household</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Funeral Event Modal -->
+    <div class="modal" id="funeralEventModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Funeral Event Triggered</h3>
+                <button class="modal-close" id="closeFuneralModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4">
+                    <div class="text-5xl mb-4">🕯️</div>
+                    <h4 class="text-xl font-bold mb-2" id="funeralHouseholdName">Mthembu Family</h4>
+                    <p class="text-muted mb-4">Funeral event has been recorded for:</p>
+                    <div class="bg-dark-3 rounded-lg p-4 mb-4">
+                        <div class="text-lg font-medium" id="funeralDeceasedName">Nomvula Mthembu</div>
+                        <div class="text-muted" id="funeralRelationship">Mother of primary member</div>
+                        <div class="text-muted" id="funeralDeathDate">12 August 2023</div>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-lg">
+                        <div class="font-bold">R 15,000.00</div>
+                        <div>has been disbursed to the household</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary w-full" id="closeFuneralEvent">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Notification -->
+    <div class="fixed bottom-4 right-4 z-50 hidden" id="successNotification">
+        <div class="bg-success text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide">
+            <i class="fas fa-check-circle"></i>
+            <span id="successMessage">Operation completed successfully!</span>
+        </div>
+    </div>
+    
+    <!-- Error Notification -->
+    <div class="fixed bottom-4 right-4 z-50 hidden" id="errorNotification">
+        <div class="bg-danger text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorMessage">An error occurred. Please try again.</span>
+        </div>
+    </div>
 
-  <script>
-    // ========== JavaScript Section Placeholder ==========
-    // This is just a placeholder for your JS code.
-    // Tab switching, modals, data arrays, event handlers, filters, charts, etc. will go here.
+    <!-- JavaScript Section -->
+    <script>
+        // Demo Data
+        const households = [
+            {
+                id: 1,
+                name: "Mthembu Family",
+                primaryMember: "Sipho Mthembu",
+                primaryId: "7503015678089",
+                contact: "0712345678",
+                email: "sipho.mthembu@example.com",
+                address: "123 Main St, Soweto, 1809",
+                members: 5,
+                joinDate: "2020-05-15",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Standard Bank",
+                accountNumber: "123456789",
+                balance: 5245,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-15"
+            },
+            {
+                id: 2,
+                name: "Dlamini Family",
+                primaryMember: "Thandi Dlamini",
+                primaryId: "8204156789087",
+                contact: "0823456789",
+                email: "thandi.d@example.com",
+                address: "45 Oak Ave, Durban, 4001",
+                members: 4,
+                joinDate: "2021-02-20",
+                monthlyContribution: 350,
+                paymentMethod: "mobile",
+                bankName: "",
+                accountNumber: "",
+                balance: 2100,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-10-05"
+            },
+            {
+                id: 3,
+                name: "Ngwenya Family",
+                primaryMember: "Bongani Ngwenya",
+                primaryId: "6807123456789",
+                contact: "0834567890",
+                email: "b.ngwenya@example.com",
+                address: "78 Pine Rd, Pretoria, 0002",
+                members: 6,
+                joinDate: "2019-11-10",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "FNB",
+                accountNumber: "987654321",
+                balance: 7350,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-01"
+            },
+            {
+                id: 4,
+                name: "Khumalo Family",
+                primaryMember: "Nomsa Khumalo",
+                primaryId: "8901234567890",
+                contact: "0723456789",
+                email: "nomsa.k@example.com",
+                address: "32 Elm St, Johannesburg, 2000",
+                members: 3,
+                joinDate: "2022-01-05",
+                monthlyContribution: 350,
+                paymentMethod: "cash",
+                bankName: "",
+                accountNumber: "",
+                balance: 1050,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-10-20"
+            },
+            {
+                id: 5,
+                name: "Ndlovu Family",
+                primaryMember: "James Ndlovu",
+                primaryId: "7705051234567",
+                contact: "0812345678",
+                email: "james.ndlovu@example.com",
+                address: "56 Maple Ave, Cape Town, 8001",
+                members: 7,
+                joinDate: "2018-07-22",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Nedbank",
+                accountNumber: "456789123",
+                balance: 9450,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-10"
+            },
+            {
+                id: 6,
+                name: "Zulu Family",
+                primaryMember: "Nomvula Zulu",
+                primaryId: "8306102345678",
+                contact: "0734567890",
+                email: "nomvula.z@example.com",
+                address: "89 Birch St, Port Elizabeth, 6001",
+                members: 4,
+                joinDate: "2021-09-14",
+                monthlyContribution: 350,
+                paymentMethod: "mobile",
+                bankName: "",
+                accountNumber: "",
+                balance: 1400,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-25"
+            },
+            {
+                id: 7,
+                name: "Sithole Family",
+                primaryMember: "David Sithole",
+                primaryId: "7202023456789",
+                contact: "0845678901",
+                email: "d.sithole@example.com",
+                address: "12 Cedar Rd, Bloemfontein, 9301",
+                members: 5,
+                joinDate: "2020-03-18",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Absa",
+                accountNumber: "321654987",
+                balance: 4550,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-05"
+            },
+            {
+                id: 8,
+                name: "Mokoena Family",
+                primaryMember: "Lerato Mokoena",
+                primaryId: "9408184567890",
+                contact: "0713456789",
+                email: "lerato.m@example.com",
+                address: "34 Willow St, Polokwane, 0700",
+                members: 3,
+                joinDate: "2022-05-30",
+                monthlyContribution: 350,
+                paymentMethod: "cash",
+                bankName: "",
+                accountNumber: "",
+                balance: 700,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-15"
+            },
+            {
+                id: 9,
+                name: "Pillay Family",
+                primaryMember: "Rajesh Pillay",
+                primaryId: "7903235678901",
+                contact: "0824567890",
+                email: "r.pillay@example.com",
+                address: "67 Palm Ave, Durban, 4001",
+                members: 6,
+                joinDate: "2019-08-12",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Standard Bank",
+                accountNumber: "789123456",
+                balance: 7700,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-08"
+            },
+            {
+                id: 10,
+                name: "Van der Merwe Family",
+                primaryMember: "Johan van der Merwe",
+                primaryId: "8507146789012",
+                contact: "0724567890",
+                email: "johan.vdm@example.com",
+                address: "23 Acacia St, Pretoria, 0083",
+                members: 4,
+                joinDate: "2021-04-25",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "FNB",
+                accountNumber: "654987321",
+                balance: 2800,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-12"
+            },
+            {
+                id: 11,
+                name: "Williams Family",
+                primaryMember: "Sarah Williams",
+                primaryId: "9109257890123",
+                contact: "0835678901",
+                email: "s.williams@example.com",
+                address: "45 Olive St, Cape Town, 8001",
+                members: 3,
+                joinDate: "2022-02-14",
+                monthlyContribution: 350,
+                paymentMethod: "mobile",
+                bankName: "",
+                accountNumber: "",
+                balance: 1050,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-20"
+            },
+            {
+                id: 12,
+                name: "Smith Family",
+                primaryMember: "John Smith",
+                primaryId: "7606308901234",
+                contact: "0714567890",
+                email: "john.smith@example.com",
+                address: "78 Pineapple Rd, Johannesburg, 2196",
+                members: 5,
+                joinDate: "2020-06-07",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Nedbank",
+                accountNumber: "987321654",
+                balance: 4200,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-18"
+            },
+            {
+                id: 13,
+                name: "Brown Family",
+                primaryMember: "Mary Brown",
+                primaryId: "8802019012345",
+                contact: "0815678901",
+                email: "m.brown@example.com",
+                address: "12 Banana St, Port Elizabeth, 6001",
+                members: 4,
+                joinDate: "2021-07-19",
+                monthlyContribution: 350,
+                paymentMethod: "cash",
+                bankName: "",
+                accountNumber: "",
+                balance: 1400,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-10"
+            },
+            {
+                id: 14,
+                name: "Jones Family",
+                primaryMember: "Robert Jones",
+                primaryId: "7404120123456",
+                contact: "0725678901",
+                email: "robert.j@example.com",
+                address: "34 Apple Ave, Bloemfontein, 9301",
+                members: 6,
+                joinDate: "2019-10-28",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Absa",
+                accountNumber: "321987654",
+                balance: 6300,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-22"
+            },
+            {
+                id: 15,
+                name: "Davis Family",
+                primaryMember: "Linda Davis",
+                primaryId: "9007031234567",
+                contact: "0825678901",
+                email: "l.davis@example.com",
+                address: "56 Orange St, Polokwane, 0700",
+                members: 3,
+                joinDate: "2022-03-05",
+                monthlyContribution: 350,
+                paymentMethod: "mobile",
+                bankName: "",
+                accountNumber: "",
+                balance: 1050,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-25"
+            },
+            {
+                id: 16,
+                name: "Taylor Family",
+                primaryMember: "Michael Taylor",
+                primaryId: "7808142345678",
+                contact: "0735678901",
+                email: "m.taylor@example.com",
+                address: "89 Grape Rd, Durban, 4001",
+                members: 5,
+                joinDate: "2020-08-16",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Standard Bank",
+                accountNumber: "789654321",
+                balance: 4550,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-10-28"
+            },
+            {
+                id: 17,
+                name: "Wilson Family",
+                primaryMember: "Patricia Wilson",
+                primaryId: "9209253456789",
+                contact: "0846789012",
+                email: "p.wilson@example.com",
+                address: "23 Peach St, Pretoria, 0002",
+                members: 4,
+                joinDate: "2021-05-09",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "FNB",
+                accountNumber: "654321987",
+                balance: 2800,
+                status: "active",
+                autoDeduction: true,
+                nextDueDate: "2023-11-08"
+            },
+            {
+                id: 18,
+                name: "Anderson Family",
+                primaryMember: "Thomas Anderson",
+                primaryId: "8001064567890",
+                contact: "0716789012",
+                email: "t.anderson@example.com",
+                address: "45 Pear Ave, Cape Town, 8001",
+                members: 6,
+                joinDate: "2019-12-22",
+                monthlyContribution: 350,
+                paymentMethod: "cash",
+                bankName: "",
+                accountNumber: "",
+                balance: 7350,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-11-18"
+            },
+            {
+                id: 19,
+                name: "Thomas Family",
+                primaryMember: "Susan Thomas",
+                primaryId: "8602175678901",
+                contact: "0817890123",
+                email: "s.thomas@example.com",
+                address: "78 Plum Rd, Johannesburg, 2000",
+                members: 3,
+                joinDate: "2021-10-11",
+                monthlyContribution: 350,
+                paymentMethod: "mobile",
+                bankName: "",
+                accountNumber: "",
+                balance: 1050,
+                status: "active",
+                autoDeduction: false,
+                nextDueDate: "2023-12-05"
+            },
+            {
+                id: 20,
+                name: "Jackson Family",
+                primaryMember: "Richard Jackson",
+                primaryId: "7003286789012",
+                contact: "0727890123",
+                email: "r.jackson@example.com",
+                address: "12 Berry St, Port Elizabeth, 6001",
+                members: 5,
+                joinDate: "2020-01-30",
+                monthlyContribution: 350,
+                paymentMethod: "bank",
+                bankName: "Nedbank",
+                accountNumber: "987654123",
+                balance: 4900,
+                status: "inactive",
+                autoDeduction: false,
+                nextDueDate: "2023-09-15"
+            }
+        ];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const tabs = document.querySelectorAll('.tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
+        const payments = [
+            { id: 1, householdId: 1, household: "Mthembu Family", date: "2023-09-15", amount: 350, method: "bank", reference: "Sept payment", status: "completed" },
+            { id: 2, householdId: 2, household: "Dlamini Family", date: "2023-09-05", amount: 350, method: "mobile", reference: "MTN money", status: "completed" },
+            { id: 3, householdId: 3, household: "Ngwenya Family", date: "2023-09-01", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 4, householdId: 4, household: "Khumalo Family", date: "2023-09-20", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 5, householdId: 5, household: "Ndlovu Family", date: "2023-09-10", amount: 350, method: "bank", reference: "Nedbank transfer", status: "completed" },
+            { id: 6, householdId: 6, household: "Zulu Family", date: "2023-09-25", amount: 350, method: "mobile", reference: "Vodacom", status: "completed" },
+            { id: 7, householdId: 7, household: "Sithole Family", date: "2023-10-05", amount: 350, method: "bank", reference: "Absa transfer", status: "completed" },
+            { id: 8, householdId: 8, household: "Mokoena Family", date: "2023-09-15", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 9, householdId: 9, household: "Pillay Family", date: "2023-09-08", amount: 350, method: "bank", reference: "Standard Bank", status: "completed" },
+            { id: 10, householdId: 10, household: "Van der Merwe Family", date: "2023-09-12", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 11, householdId: 11, household: "Williams Family", date: "2023-09-20", amount: 350, method: "mobile", reference: "Cell C", status: "completed" },
+            { id: 12, householdId: 12, household: "Smith Family", date: "2023-09-18", amount: 350, method: "bank", reference: "Nedbank", status: "completed" },
+            { id: 13, householdId: 13, household: "Brown Family", date: "2023-10-10", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 14, householdId: 14, household: "Jones Family", date: "2023-09-22", amount: 350, method: "bank", reference: "Absa transfer", status: "completed" },
+            { id: 15, householdId: 15, household: "Davis Family", date: "2023-09-25", amount: 350, method: "mobile", reference: "MTN money", status: "completed" },
+            { id: 16, householdId: 16, household: "Taylor Family", date: "2023-09-28", amount: 350, method: "bank", reference: "Standard Bank", status: "completed" },
+            { id: 17, householdId: 17, household: "Wilson Family", date: "2023-10-08", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 18, householdId: 18, household: "Anderson Family", date: "2023-09-18", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 19, householdId: 19, household: "Thomas Family", date: "2023-11-05", amount: 350, method: "mobile", reference: "Vodacom", status: "pending" },
+            { id: 20, householdId: 20, household: "Jackson Family", date: "2023-09-15", amount: 350, method: "bank", reference: "Nedbank", status: "failed", reason: "Insufficient funds" },
+            { id: 21, householdId: 1, household: "Mthembu Family", date: "2023-08-15", amount: 350, method: "bank", reference: "Aug payment", status: "completed" },
+            { id: 22, householdId: 2, household: "Dlamini Family", date: "2023-08-05", amount: 350, method: "mobile", reference: "MTN money", status: "completed" },
+            { id: 23, householdId: 3, household: "Ngwenya Family", date: "2023-08-01", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 24, householdId: 4, household: "Khumalo Family", date: "2023-08-20", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 25, householdId: 5, household: "Ndlovu Family", date: "2023-08-10", amount: 350, method: "bank", reference: "Nedbank transfer", status: "completed" },
+            { id: 26, householdId: 6, household: "Zulu Family", date: "2023-08-25", amount: 350, method: "mobile", reference: "Vodacom", status: "completed" },
+            { id: 27, householdId: 7, household: "Sithole Family", date: "2023-09-05", amount: 350, method: "bank", reference: "Absa transfer", status: "completed" },
+            { id: 28, householdId: 8, household: "Mokoena Family", date: "2023-08-15", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 29, householdId: 9, household: "Pillay Family", date: "2023-08-08", amount: 350, method: "bank", reference: "Standard Bank", status: "completed" },
+            { id: 30, householdId: 10, household: "Van der Merwe Family", date: "2023-08-12", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 31, householdId: 11, household: "Williams Family", date: "2023-08-20", amount: 350, method: "mobile", reference: "Cell C", status: "completed" },
+            { id: 32, householdId: 12, household: "Smith Family", date: "2023-08-18", amount: 350, method: "bank", reference: "Nedbank", status: "completed" },
+            { id: 33, householdId: 13, household: "Brown Family", date: "2023-09-10", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 34, householdId: 14, household: "Jones Family", date: "2023-08-22", amount: 350, method: "bank", reference: "Absa transfer", status: "completed" },
+            { id: 35, householdId: 15, household: "Davis Family", date: "2023-08-25", amount: 350, method: "mobile", reference: "MTN money", status: "completed" },
+            { id: 36, householdId: 16, household: "Taylor Family", date: "2023-08-28", amount: 350, method: "bank", reference: "Standard Bank", status: "completed" },
+            { id: 37, householdId: 17, household: "Wilson Family", date: "2023-09-08", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 38, householdId: 18, household: "Anderson Family", date: "2023-08-18", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 39, householdId: 19, household: "Thomas Family", date: "2023-10-05", amount: 350, method: "mobile", reference: "Vodacom", status: "pending" },
+            { id: 40, householdId: 20, household: "Jackson Family", date: "2023-08-15", amount: 350, method: "bank", reference: "Nedbank", status: "failed", reason: "Account closed" },
+            { id: 41, householdId: 1, household: "Mthembu Family", date: "2023-07-15", amount: 350, method: "bank", reference: "Jul payment", status: "completed" },
+            { id: 42, householdId: 2, household: "Dlamini Family", date: "2023-07-05", amount: 350, method: "mobile", reference: "MTN money", status: "completed" },
+            { id: 43, householdId: 3, household: "Ngwenya Family", date: "2023-07-01", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" },
+            { id: 44, householdId: 4, household: "Khumalo Family", date: "2023-07-20", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 45, householdId: 5, household: "Ndlovu Family", date: "2023-07-10", amount: 350, method: "bank", reference: "Nedbank transfer", status: "completed" },
+            { id: 46, householdId: 6, household: "Zulu Family", date: "2023-07-25", amount: 350, method: "mobile", reference: "Vodacom", status: "completed" },
+            { id: 47, householdId: 7, household: "Sithole Family", date: "2023-08-05", amount: 350, method: "bank", reference: "Absa transfer", status: "completed" },
+            { id: 48, householdId: 8, household: "Mokoena Family", date: "2023-07-15", amount: 350, method: "cash", reference: "Office payment", status: "completed" },
+            { id: 49, householdId: 9, household: "Pillay Family", date: "2023-07-08", amount: 350, method: "bank", reference: "Standard Bank", status: "completed" },
+            { id: 50, householdId: 10, household: "Van der Merwe Family", date: "2023-07-12", amount: 350, method: "bank", reference: "FNB transfer", status: "completed" }
+        ];
 
-      function activateTab(tabName) {
-        tabContents.forEach(section => {
-          if (section.id === tabName) {
-            section.hidden = false;
-          } else {
-            section.hidden = true;
-          }
-        });
-        tabs.forEach(tab => {
-          if (tab.dataset.tab === tabName) {
-            tab.classList.add('active');
-            tab.setAttribute('aria-selected', 'true');
-          } else {
-            tab.classList.remove('active');
-            tab.setAttribute('aria-selected', 'false');
-          }
-        });
-      }
+        const funeralEvents = [
+            { id: 1, householdId: 1, household: "Mthembu Family", deceased: "Nomvula Mthembu", date: "2023-08-12", relationship: "mother", amount: 15000, status: "completed" },
+            { id: 2, householdId: 2, household: "Dlamini Family", deceased: "Sipho Dlamini", date: "2023-07-25", relationship: "father", amount: 15000, status: "completed" },
+            { id: 3, householdId: 3, household: "Ngwenya Family", deceased: "Bongani Ngwenya", date: "2023-06-14", relationship: "father", amount: 15000, status: "completed" },
+            { id: 4, householdId: 5, household: "Ndlovu Family", deceased: "Thando Ndlovu", date: "2023-03-08", relationship: "child", amount: 15000, status: "completed" },
+            { id: 5, householdId: 10, household: "Van der Merwe Family", deceased: "Anna van der Merwe", date: "2023-01-20", relationship: "spouse", amount: 15000, status: "completed" }
+        ];
 
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => activateTab(tab.dataset.tab));
-      });
-
-      // Default show household dashboard
-      activateTab('household-dashboard');
-
-      // Modal open/close for QR Payment
-      const qrModal = document.getElementById('qr-modal');
-      const openQrBtn = document.getElementById('open-qr-modal');
-      const closeQrBtn = qrModal.querySelector('.modal-close');
-
-      openQrBtn.addEventListener('click', () => {
-        qrModal.classList.add('active');
-        qrModal.setAttribute('aria-hidden', 'false');
-      });
-
-      closeQrBtn.addEventListener('click', () => {
-        qrModal.classList.remove('active');
-        qrModal.setAttribute('aria-hidden', 'true');
-      });
-
-      qrModal.addEventListener('click', e => {
-        if (e.target === qrModal) {
-          qrModal.classList.remove('active');
-          qrModal.setAttribute('aria-hidden', 'true');
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const navbarNav = document.getElementById('navbarNav');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const mainContent = document.getElementById('mainContent');
+        const contentSections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.nav-link, .sidebar-link');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Modal Elements
+        const paymentModal = document.getElementById('paymentModal');
+        const showPaymentModal = document.getElementById('showPaymentModal');
+        const closePaymentModal = document.getElementById('closePaymentModal');
+        const cancelPayment = document.getElementById('cancelPayment');
+        const submitPayment = document.getElementById('submitPayment');
+        const paymentForm = document.getElementById('paymentForm');
+        const paymentHousehold = document.getElementById('paymentHousehold');
+        
+        const addHouseholdModal = document.getElementById('addHouseholdModal');
+        const showAddHouseholdModal = document.getElementById('showAddHouseholdModal');
+        const closeHouseholdModal = document.getElementById('closeHouseholdModal');
+        const cancelHousehold = document.getElementById('cancelHousehold');
+        const submitHousehold = document.getElementById('submitHousehold');
+        const householdForm = document.getElementById('householdForm');
+        
+        const funeralEventModal = document.getElementById('funeralEventModal');
+        const triggerFuneralEvent = document.getElementById('triggerFuneralEvent');
+        const closeFuneralModal = document.getElementById('closeFuneralModal');
+        const closeFuneralEvent = document.getElementById('closeFuneralEvent');
+        const funeralHouseholdSelect = document.getElementById('funeralHouseholdSelect');
+        const deceasedName = document.getElementById('deceasedName');
+        const deathDate = document.getElementById('deathDate');
+        const relationship = document.getElementById('relationship');
+        const simulateFuneralEvent = document.getElementById('simulateFuneralEvent');
+        
+        // Notification Elements
+        const successNotification = document.getElementById('successNotification');
+        const successMessage = document.getElementById('successMessage');
+        const errorNotification = document.getElementById('errorNotification');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // Table Elements
+        const paymentHistoryTable = document.getElementById('paymentHistoryTable');
+        const allPaymentsTable = document.getElementById('allPaymentsTable');
+        const completedPaymentsTable = document.getElementById('completedPaymentsTable');
+        const pendingPaymentsTable = document.getElementById('pendingPaymentsTable');
+        const failedPaymentsTable = document.getElementById('failedPaymentsTable');
+        const householdsTable = document.getElementById('householdsTable');
+        const adminHouseholdsTable = document.getElementById('adminHouseholdsTable');
+        
+        // Other Elements
+        const viewAllPayments = document.getElementById('viewAllPayments');
+        const exportPayments = document.getElementById('exportPayments');
+        const exportHouseholds = document.getElementById('exportHouseholds');
+        const paymentSearch = document.getElementById('paymentSearch');
+        const householdSearch = document.getElementById('householdSearch');
+        const adminHouseholdSearch = document.getElementById('adminHouseholdSearch');
+        
+        // Initialize the application
+        function init() {
+            // Set current date for date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+            document.getElementById('joinDate').value = today;
+            document.getElementById('deathDate').value = today;
+            
+            // Populate household dropdowns
+            populateHouseholdDropdowns();
+            
+            // Render tables with demo data
+            renderPaymentHistoryTable();
+            renderAllPaymentsTable();
+            renderCompletedPaymentsTable();
+            renderPendingPaymentsTable();
+            renderFailedPaymentsTable();
+            renderHouseholdsTable();
+            renderAdminHouseholdsTable();
+            
+            // Initialize event listeners
+            setupEventListeners();
+            
+            // Show dashboard by default
+            showSection('dashboard');
         }
-      });
-
-      // TODO: Load demo data, populate tables, handle forms, charts, filters...
-
-    });
-  </script>
+        
+        // Populate household dropdowns in forms
+        function populateHouseholdDropdowns() {
+            // Payment modal dropdown
+            paymentHousehold.innerHTML = '';
+            households.forEach(household => {
+                const option = document.createElement('option');
+                option.value = household.id;
+                option.textContent = `${household.name} (${household.primaryMember})`;
+                paymentHousehold.appendChild(option);
+            });
+            
+            // Funeral event dropdown
+            funeralHouseholdSelect.innerHTML = '';
+            households.forEach(household => {
+                const option = document.createElement('option');
+                option.value = household.id;
+                option.textContent = `${household.name} (${household.primaryMember})`;
+                funeralHouseholdSelect.appendChild(option);
+            });
+        }
+        
+        // Render payment history table
+        function renderPaymentHistoryTable() {
+            paymentHistoryTable.innerHTML = '';
+            
+            // Get payments for the current household (ID 1 for demo)
+            const householdPayments = payments
+                .filter(p => p.householdId === 1)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            householdPayments.forEach(payment => {
+                const row = document.createElement('tr');
+                
+                const statusBadge = payment.status === 'completed' 
+                    ? '<span class="badge badge-success">Completed</span>'
+                    : payment.status === 'pending'
+                    ? '<span class="badge badge-warning">Pending</span>'
+                    : '<span class="badge badge-danger">Failed</span>';
+                
+                row.innerHTML = `
+                    <td>${formatDate(payment.date)}</td>
+                    <td>${payment.reference}</td>
+                    <td>R ${payment.amount.toFixed(2)}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm view-payment" data-id="${payment.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                
+                paymentHistoryTable.appendChild(row);
+            });
+        }
+        
+        // Render all payments table
+        function renderAllPaymentsTable() {
+            allPaymentsTable.innerHTML = '';
+            
+            payments
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10)
+                .forEach(payment => {
+                    const row = document.createElement('tr');
+                    
+                    const statusBadge = payment.status === 'completed' 
+                        ? '<span class="badge badge-success">Completed</span>'
+                        : payment.status === 'pending'
+                        ? '<span class="badge badge-warning">Pending</span>'
+                        : '<span class="badge badge-danger">Failed</span>';
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${formatDate(payment.date)}</td>
+                        <td>${payment.household}</td>
+                        <td>R ${payment.amount.toFixed(2)}</td>
+                        <td>${formatPaymentMethod(payment.method)}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm view-payment" data-id="${payment.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    allPaymentsTable.appendChild(row);
+                });
+        }
+        
+        // Render completed payments table
+        function renderCompletedPaymentsTable() {
+            completedPaymentsTable.innerHTML = '';
+            
+            payments
+                .filter(p => p.status === 'completed')
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10)
+                .forEach(payment => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${formatDate(payment.date)}</td>
+                        <td>${payment.household}</td>
+                        <td>R ${payment.amount.toFixed(2)}</td>
+                        <td>${formatPaymentMethod(payment.method)}</td>
+                        <td>${payment.reference}</td>
+                    `;
+                    
+                    completedPaymentsTable.appendChild(row);
+                });
+        }
+        
+        // Render pending payments table
+        function renderPendingPaymentsTable() {
+            pendingPaymentsTable.innerHTML = '';
+            
+            payments
+                .filter(p => p.status === 'pending')
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10)
+                .forEach(payment => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${formatDate(payment.date)}</td>
+                        <td>${payment.household}</td>
+                        <td>R ${payment.amount.toFixed(2)}</td>
+                        <td>${formatPaymentMethod(payment.method)}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm confirm-payment" data-id="${payment.id}">
+                                <i class="fas fa-check"></i> Confirm
+                            </button>
+                            <button class="btn btn-danger btn-sm cancel-payment" data-id="${payment.id}">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </td>
+                    `;
+                    
+                    pendingPaymentsTable.appendChild(row);
+                });
+        }
+        
+        // Render failed payments table
+        function renderFailedPaymentsTable() {
+            failedPaymentsTable.innerHTML = '';
+            
+            payments
+                .filter(p => p.status === 'failed')
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10)
+                .forEach(payment => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${formatDate(payment.date)}</td>
+                        <td>${payment.household}</td>
+                        <td>R ${payment.amount.toFixed(2)}</td>
+                        <td>${formatPaymentMethod(payment.method)}</td>
+                        <td>${payment.reason}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm retry-payment" data-id="${payment.id}">
+                                <i class="fas fa-sync-alt"></i> Retry
+                            </button>
+                        </td>
+                    `;
+                    
+                    failedPaymentsTable.appendChild(row);
+                });
+        }
+        
+        // Render households table
+        function renderHouseholdsTable() {
+            householdsTable.innerHTML = '';
+            
+            households
+                .slice(0, 10)
+                .forEach(household => {
+                    const row = document.createElement('tr');
+                    
+                    const statusBadge = household.status === 'active' 
+                        ? '<span class="badge badge-success">Active</span>'
+                        : '<span class="badge badge-danger">Inactive</span>';
+                    
+                    const autoDeduction = household.autoDeduction 
+                        ? '<span class="badge badge-primary">Enabled</span>'
+                        : '<span class="badge badge-light">Disabled</span>';
+                    
+                    row.innerHTML = `
+                        <td>${household.id}</td>
+                        <td>${household.name}</td>
+                        <td>${household.primaryMember}</td>
+                        <td>${household.members}</td>
+                        <td>R ${household.balance.toFixed(2)}</td>
+                        <td>${statusBadge} ${autoDeduction}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm view-household" data-id="${household.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-sm edit-household" data-id="${household.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    householdsTable.appendChild(row);
+                });
+        }
+        
+        // Render admin households table
+        function renderAdminHouseholdsTable() {
+            adminHouseholdsTable.innerHTML = '';
+            
+            households
+                .slice(0, 10)
+                .forEach(household => {
+                    const row = document.createElement('tr');
+                    
+                    const statusBadge = household.status === 'active' 
+                        ? '<span class="badge badge-success">Active</span>'
+                        : '<span class="badge badge-danger">Inactive</span>';
+                    
+                    row.innerHTML = `
+                        <td>${household.id}</td>
+                        <td>${household.name}</td>
+                        <td>${household.primaryMember}</td>
+                        <td>${household.contact}</td>
+                        <td>R ${household.balance.toFixed(2)}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-outline btn-sm view-household" data-id="${household.id}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-sm edit-household" data-id="${household.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline btn-sm ${household.status === 'active' ? 'btn-danger' : 'btn-success'}" data-id="${household.id}">
+                                    <i class="fas ${household.status === 'active' ? 'fa-ban' : 'fa-check'}"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    adminHouseholdsTable.appendChild(row);
+                });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-ZA', options);
+        }
+        
+        // Format payment method for display
+        function formatPaymentMethod(method) {
+            switch(method) {
+                case 'bank': return 'Bank Transfer';
+                case 'cash': return 'Cash';
+                case 'mobile': return 'Mobile Money';
+                default: return 'Other';
+            }
+        }
+        
+        // Show notification
+        function showNotification(type, message) {
+            if (type === 'success') {
+                successMessage.textContent = message;
+                successNotification.classList.remove('hidden');
+                setTimeout(() => {
+                    successNotification.classList.add('hidden');
+                }, 3000);
+            } else {
+                errorMessage.textContent = message;
+                errorNotification.classList.remove('hidden');
+                setTimeout(() => {
+                    errorNotification.classList.add('hidden');
+                }, 3000);
+            }
+        }
+        
+        // Show section based on navigation
+        function showSection(sectionId) {
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === `${sectionId}Section`) {
+                    section.classList.add('active');
+                }
+            });
+            
+            // Update active nav links
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionId) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Close mobile menu if open
+            navbarNav.classList.remove('active');
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Sidebar toggle for mobile
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+            
+            // Navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection(link.dataset.section);
+                });
+            });
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    document.querySelector(`.tab-content[data-tab-content="${tab.dataset.tab}"]`).classList.add('active');
+                });
+            });
+            
+            // Payment modal
+            showPaymentModal.addEventListener('click', () => {
+                paymentModal.classList.add('active');
+            });
+            
+            closePaymentModal.addEventListener('click', () => {
+                paymentModal.classList.remove('active');
+            });
+            
+            cancelPayment.addEventListener('click', () => {
+                paymentModal.classList.remove('active');
+            });
+            
+            submitPayment.addEventListener('click', () => {
+                // Validate form
+                if (paymentForm.checkValidity()) {
+                    // In a real app, you would submit the form data here
+                    paymentModal.classList.remove('active');
+                    showNotification('success', 'Payment recorded successfully!');
+                    paymentForm.reset();
+                } else {
+                    paymentForm.reportValidity();
+                }
+            });
+            
+            // Add household modal
+            showAddHouseholdModal.addEventListener('click', () => {
+                addHouseholdModal.classList.add('active');
+            });
+            
+            closeHouseholdModal.addEventListener('click', () => {
+                addHouseholdModal.classList.remove('active');
+            });
+            
+            cancelHousehold.addEventListener('click', () => {
+                addHouseholdModal.classList.remove('active');
+            });
+            
+            submitHousehold.addEventListener('click', () => {
+                // Validate form
+                if (householdForm.checkValidity()) {
+                    // In a real app, you would submit the form data here
+                    addHouseholdModal.classList.remove('active');
+                    showNotification('success', 'Household added successfully!');
+                    householdForm.reset();
+                } else {
+                    householdForm.reportValidity();
+                }
+            });
+            
+            // Funeral event modal
+            triggerFuneralEvent.addEventListener('click', () => {
+                // In a real app, you would have a separate modal to collect details
+                // For demo, we'll just show the funeral event modal directly
+                funeralEventModal.classList.add('active');
+            });
+            
+            closeFuneralModal.addEventListener('click', () => {
+                funeralEventModal.classList.remove('active');
+            });
+            
+            closeFuneralEvent.addEventListener('click', () => {
+                funeralEventModal.classList.remove('active');
+            });
+            
+            // Simulate funeral event
+            simulateFuneralEvent.addEventListener('click', () => {
+                const householdId = parseInt(funeralHouseholdSelect.value);
+                const household = households.find(h => h.id === householdId);
+                
+                if (!household) {
+                    showNotification('error', 'Household not found!');
+                    return;
+                }
+                
+                if (!deceasedName.value) {
+                    showNotification('error', 'Please enter deceased name!');
+                    return;
+                }
+                
+                if (!deathDate.value) {
+                    showNotification('error', 'Please select date of death!');
+                    return;
+                }
+                
+                // Update the modal content
+                document.getElementById('funeralHouseholdName').textContent = household.name;
+                document.getElementById('funeralDeceasedName').textContent = deceasedName.value;
+                
+                const relationshipText = {
+                    'parent': 'Parent of primary member',
+                    'spouse': 'Spouse of primary member',
+                    'child': 'Child of primary member',
+                    'sibling': 'Sibling of primary member',
+                    'other': 'Relative of primary member'
+                }[relationship.value];
+                
+                document.getElementById('funeralRelationship').textContent = relationshipText;
+                document.getElementById('funeralDeathDate').textContent = formatDate(deathDate.value);
+                
+                // Show the modal
+                funeralEventModal.classList.add('active');
+                
+                // Reset the form
+                deceasedName.value = '';
+                deathDate.value = new Date().toISOString().split('T')[0];
+                relationship.value = 'parent';
+                
+                showNotification('success', 'Funeral event simulated successfully!');
+            });
+            
+            // View all payments button
+            viewAllPayments.addEventListener('click', () => {
+                showSection('payments');
+            });
+            
+            // Export buttons
+            exportPayments.addEventListener('click', () => {
+                showNotification('success', 'Payments data exported to CSV!');
+            });
+            
+            exportHouseholds.addEventListener('click', () => {
+                showNotification('success', 'Households data exported to CSV!');
+            });
+            
+            // Search functionality
+            paymentSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                // In a real app, you would filter the payments data
+                console.log(`Searching payments for: ${searchTerm}`);
+            });
+            
+            householdSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                // In a real app, you would filter the households data
+                console.log(`Searching households for: ${searchTerm}`);
+            });
+            
+            adminHouseholdSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                // In a real app, you would filter the households data
+                console.log(`Searching admin households for: ${searchTerm}`);
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === paymentModal) {
+                    paymentModal.classList.remove('active');
+                }
+                if (e.target === addHouseholdModal) {
+                    addHouseholdModal.classList.remove('active');
+                }
+                if (e.target === funeralEventModal) {
+                    funeralEventModal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
