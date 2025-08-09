@@ -4,7 +4,309 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>COM-SERVE Funeral Payment Tracking</title>
-  <style>
+  <style>/* ==== DARK THEME BASE ==== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+:root {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --text-color: #e0e0e0;
+  --accent-color: #4caf50;
+  --accent-hover: #66bb6a;
+  --shadow-color: rgba(0, 0, 0, 0.7);
+  --border-radius: 12px;
+  --transition-speed: 0.3s;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.6;
+  overflow-y: scroll;
+}
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+}
+a:hover {
+  color: var(--accent-hover);
+}
+h1, h2, h3, h4 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+p {
+  margin: 0 0 1rem 0;
+}
+
+/* ==== NAVIGATION TABS ==== */
+nav {
+  background-color: var(--card-bg);
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+nav button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  margin: 0 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  position: relative;
+  overflow: hidden;
+}
+nav button::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 3px;
+  background: var(--accent-color);
+  transition: width 0.3s ease, left 0.3s ease;
+  border-radius: 3px 3px 0 0;
+}
+nav button:hover::after,
+nav button.active::after {
+  width: 100%;
+  left: 0;
+}
+nav button:hover,
+nav button.active {
+  background-color: var(--accent-color);
+  color: #121212;
+}
+
+/* ==== MAIN CONTAINER ==== */
+main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* ==== CARD STYLE ==== */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 8px var(--shadow-color);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 10px 20px rgba(76, 175, 80, 0.3),
+    0 4px 8px var(--shadow-color);
+}
+
+/* ==== HOUSEHOLD DASHBOARD ==== */
+#household-dashboard {
+  display: none;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+.wallet-balance {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* ==== TABLES ==== */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-top: 1rem;
+  color: var(--text-color);
+}
+thead tr {
+  background-color: #262626;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+tbody tr:nth-child(odd) {
+  background-color: #1a1a1a;
+}
+tbody tr:nth-child(even) {
+  background-color: #222;
+}
+tbody tr:hover {
+  background-color: #333;
+  cursor: pointer;
+}
+th, td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #333;
+  text-align: left;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+/* ==== MODAL ==== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1500;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  animation-fill-mode: forwards;
+}
+.modal.active {
+  display: flex;
+  animation: fadeIn 0.3s ease forwards;
+}
+.modal-content {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  max-width: 600px;
+  width: 100%;
+  padding: 2rem;
+  box-shadow: 0 8px 16px var(--shadow-color);
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  color: var(--text-color);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* ==== BUTTONS ==== */
+button.primary {
+  background-color: var(--accent-color);
+  color: #121212;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color var(--transition-speed);
+}
+button.primary:hover {
+  background-color: var(--accent-hover);
+}
+button.primary:active {
+  transform: scale(0.95);
+}
+
+/* ==== FORM CONTROLS ==== */
+input[type="text"],
+input[type="number"],
+select,
+input[type="search"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #333;
+  border-radius: var(--border-radius);
+  background-color: #181818;
+  color: var(--text-color);
+  font-size: 1rem;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+  margin-bottom: 1rem;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+input[type="search"]:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 5px var(--accent-color);
+}
+
+/* ==== SCROLLBAR ==== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 10px;
+}
+
+/* ==== ANIMATIONS ==== */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  nav {
+    flex-wrap: wrap;
+  }
+  nav button {
+    margin: 0.5rem;
+    flex: 1 1 40%;
+  }
+}
+
+/* ==== ADMIN LOGS ==== */
+#logs {
+  font-family: monospace;
+  white-space: pre-wrap;
+  color: #a5d6a7;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #2a2a2a;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
+
+/* ==== SCREEN READER ONLY ==== */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+}
+
     /* ==== DARK THEME BASE ==== */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
     :root {
